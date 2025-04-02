@@ -1,4 +1,4 @@
-Shader "Mh2/Postprocess/CustomPostProcessUber"
+Shader "XuanXuan/Postprocess/CustomPostProcessUber"
 {
         Properties
         { 
@@ -50,7 +50,7 @@ Shader "Mh2/Postprocess/CustomPostProcessUber"
                 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
          
                 #include "HLSL/PostProcessingFlags.hlsl"
-                #include "Packages/com.r2.render.utility/Shader/HLSL/Mh2_Utility.hlsl"
+                #include "Packages/com.xuanxuan.render.utility/Shader/HLSL/XuanXuan_Utility.hlsl"
                 
                 // This example uses the Attributes structure as an input structure in
                 // the vertex shader.
@@ -146,10 +146,9 @@ Shader "Mh2/Postprocess/CustomPostProcessUber"
     
                 half4 frag(Varyings IN) : SV_Target
                 {
-                    
                     half2 screenUV = IN.uv;
                     half2 distortUV = 0;
-                    half2 distortUVWithoutIntensity;
+                    half2 distortUVWithoutIntensity=0;
 
                     half4 color = 0;
 
@@ -179,7 +178,6 @@ Shader "Mh2/Postprocess/CustomPostProcessUber"
                     UNITY_BRANCH
                     if(CheckLocalFlags(FLAG_BIT_DISTORT_SPEED))
                     {
-                        // return 1;
                         _SpeedDistortMap_ST.zw += _SpeedDistortVec2.xy * _Time.y;
                         // return half4(polarCoordinates,0,1);
                         half2 distortSpeedUV;
@@ -207,6 +205,7 @@ Shader "Mh2/Postprocess/CustomPostProcessUber"
 
                         color.a += dot(distortUV,distortUV)*100000;
                     }
+                  
                     // return half4(((dot(distortUV,distortUV)*100000)).rrr,1);
                     
                     UNITY_BRANCH

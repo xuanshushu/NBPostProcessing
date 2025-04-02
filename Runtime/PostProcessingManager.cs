@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-using Sirenix.OdinInspector;
+// using Sirenix.OdinInspector;
 
 // #if UNITY_EDITOR
 //     using Sirenix.OdinInspector.Editor;
@@ -61,15 +61,15 @@ public class PostProcessingManager : MonoBehaviour
     // [ReadOnly] public Volume volume;
     // private static VolumeProfile profile;
     // [ReadOnly]
-    public static Material Material
+    public static Material material
     {
         get
         {
-            return CustomPostProcess.CustomedPostProcessMaterial;
+            return CustomPostProcess.CustomPostProcessMaterial;
         }
     }
     
-    public static Mh2CustomPostprocessFlags flags = new Mh2CustomPostprocessFlags(Material);
+    public static Mh2CustomPostprocessFlags flags = new Mh2CustomPostprocessFlags(material);
 
     // public CinemachineBrain cameraBrain;
     // public CinemachineVirtualCamera currentVirtualCamera;
@@ -78,7 +78,7 @@ public class PostProcessingManager : MonoBehaviour
     
     public static void InitMat()
     {
-        flags.SetMaterial(PostProcessingManager.Material);
+        flags.SetMaterial(PostProcessingManager.material);
     }
     private void OnEnable()
     {
@@ -119,7 +119,7 @@ public class PostProcessingManager : MonoBehaviour
         
         
         //重置Flag
-        flags = new Mh2CustomPostprocessFlags(Material);
+        flags = new Mh2CustomPostprocessFlags(material);
         flags.SetFlagBits(0);
         
     }
@@ -130,10 +130,10 @@ public class PostProcessingManager : MonoBehaviour
     }
 
 
-    [ShowInInspector]
-#if UNITY_EDITOR
-    [BinaryInt(8)]
-#endif
+//     [ShowInInspector]
+// #if UNITY_EDITOR
+//     [BinaryInt(8)]
+// #endif
     private int _controllerIndexFlags = 0;
 
     public static int laseUpdateControllerIndex;
@@ -219,9 +219,9 @@ public class PostProcessingManager : MonoBehaviour
     {
         /*
 #if UNITY_EDITOR
-        if (flags.GetMaterial() != PostProcessingManager.Material)
+        if (flags.GetMaterial() != PostProcessingManager.material)
         {
-            flags.SetMaterial(PostProcessingManager.Material);
+            flags.SetMaterial(PostProcessingManager.material);
         }
 #endif
         */
@@ -282,7 +282,7 @@ public class PostProcessingManager : MonoBehaviour
 
         if (isSetCustomScreenCenterPos)
         {
-            Material.SetVector(_customScreenCenterProperty,
+            material.SetVector(_customScreenCenterProperty,
                 new Vector4(customScreenCenterPos.x, customScreenCenterPos.y, 0, 0));
         }
         
@@ -328,11 +328,11 @@ public class PostProcessingManager : MonoBehaviour
     private bool _lastIsChromaticAberration = false;
     private readonly int _chromaticAberrationVecProperty = Shader.PropertyToID("_ChromaticAberrationVec");
     
-    [ShowInInspector]
-    [LabelText("色散开关")]
-#if UNITY_EDITOR
-    [BinaryInt(8)]
-#endif
+//     [ShowInInspector]
+//     [LabelText("色散开关")]
+// #if UNITY_EDITOR
+//     [BinaryInt(8)]
+// #endif
     public static int chromaticAberrationToggles = 0;
 
     public static bool isCaByDistort= false;
@@ -344,7 +344,7 @@ public class PostProcessingManager : MonoBehaviour
 
     private void InitChromaticAberration()
     {
-        // Debug.Log("InitCA");
+        Debug.Log("InitCA");
         flags.SetFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_CHORATICABERRAT);
     }
 
@@ -363,7 +363,7 @@ public class PostProcessingManager : MonoBehaviour
 
             _lastIsCaByDistort = isCaByDistort;
         }
-        Material.SetVector(_chromaticAberrationVecProperty, new Vector4(chromaticAberrationIntensity,chromaticAberrationPos,chromaticAberrationRange));
+        material.SetVector(_chromaticAberrationVecProperty, new Vector4(chromaticAberrationIntensity,chromaticAberrationPos,chromaticAberrationRange));
         chromaticAberrationIntensity = 0;//等待下一次update
         chromaticAberrationPos = 0;//等待下一次update
         chromaticAberrationRange = 0;//等待下一次update
@@ -384,11 +384,11 @@ public class PostProcessingManager : MonoBehaviour
 
     public static bool isDistortScreenUVMode;
     private bool _lastIsDistortScreenUVMode;
-    [ShowInInspector]
-    [LabelText("径向扭曲开关")]
-#if UNITY_EDITOR
-    [BinaryInt(8)]
-#endif
+//     [ShowInInspector]
+//     [LabelText("径向扭曲开关")]
+// #if UNITY_EDITOR
+//     [BinaryInt(8)]
+// #endif
     public static int distortSpeedToggles;
 
     public static Texture2D distortTexture2D;
@@ -422,8 +422,8 @@ public class PostProcessingManager : MonoBehaviour
         Vector4 distortVec = new Vector4(distortSpeedIntensity, distortSpeedPosition, distortSpeedRange,
             distortTextureMidValue);
         Vector4 distortVec2 = new Vector4(distortSpeedMoveSpeedX, distortSpeedMoveSpeedY, 0, 0);
-        Material.SetVector(_distortVecProperty, distortVec);
-        Material.SetVector(_distortVec2Property, distortVec2);
+        material.SetVector(_distortVecProperty, distortVec);
+        material.SetVector(_distortVec2Property, distortVec2);
         distortSpeedIntensity = 0;
         distortSpeedPosition = 0;
         distortSpeedRange = 0;
@@ -438,11 +438,11 @@ public class PostProcessingManager : MonoBehaviour
     #endregion
 
     #region 径向模糊
-    [ShowInInspector]
-    [LabelText("径向模糊开关")]
-    #if UNITY_EDITOR
-        [BinaryInt(8)]
-    #endif
+    // [ShowInInspector]
+    // [LabelText("径向模糊开关")]
+    // #if UNITY_EDITOR
+    //     [BinaryInt(8)]
+    // #endif
     public static int radialBlurToggles = 0;
     private readonly int _radialBlurVecProperty = Shader.PropertyToID("_RadialBlurVec");
     public static float radialBlurIntensity = 0;
@@ -476,7 +476,7 @@ public class PostProcessingManager : MonoBehaviour
             _lastIsRadialBlurByDistort = isRadialBlurByDistort;
         }
         Vector4 radialBlurVec = new Vector4(radialBlurIntensity*0.1f/radialBlurSampleCount, radialBlurPos, radialBlurRange, radialBlurSampleCount);
-        Material.SetVector(_radialBlurVecProperty,radialBlurVec);
+        material.SetVector(_radialBlurVecProperty,radialBlurVec);
         radialBlurIntensity = 0;
         radialBlurSampleCount = 0;
         radialBlurPos = 0;
@@ -493,11 +493,11 @@ public class PostProcessingManager : MonoBehaviour
 
     #region 震屏
     //震屏测试
-    [ShowInInspector]
-    [LabelText("震屏开关")]
-#if UNITY_EDITOR
-    [BinaryInt(8)]
-#endif
+//     [ShowInInspector]
+//     [LabelText("震屏开关")]
+// #if UNITY_EDITOR
+//     [BinaryInt(8)]
+// #endif
     public static int cameraShakeToggles = 0;
 
 
@@ -535,11 +535,11 @@ public class PostProcessingManager : MonoBehaviour
  
     //肌理图
     //注意，肌理图就是硬切，只有intensity可以做差值。
-    [ShowInInspector]
-    [LabelText("肌理开关")]
-#if UNITY_EDITOR
-    [BinaryInt(8)]
-#endif
+//     [ShowInInspector]
+//     [LabelText("肌理开关")]
+// #if UNITY_EDITOR
+//     [BinaryInt(8)]
+// #endif
     public static int overlayTextureToggles = 0;
 
     private bool _lastIsOverlayTexture = false;
@@ -557,7 +557,7 @@ public class PostProcessingManager : MonoBehaviour
 
     private void UpdateOverlayTexture()
     {
-        Material.SetFloat(_overlayTextureIntensityProperty, overlayTextureIntensity);
+        material.SetFloat(_overlayTextureIntensityProperty, overlayTextureIntensity);
         overlayTextureIntensity = 0;
     }
 
@@ -570,11 +570,11 @@ public class PostProcessingManager : MonoBehaviour
 
     #region 黑白闪
     
-    [ShowInInspector]
-    [LabelText("黑白闪开关")]
-#if UNITY_EDITOR
-    [BinaryInt(8)]
-#endif
+//     [ShowInInspector]
+//     [LabelText("黑白闪开关")]
+// #if UNITY_EDITOR
+//     [BinaryInt(8)]
+// #endif
     public static int flashToggles = 0;
 
     private bool _lastIsFlash = false;
@@ -597,9 +597,9 @@ public class PostProcessingManager : MonoBehaviour
 
     private void UpdateFlash()
     {
-        Material.SetFloat(_flashDesaturateProperty, flashDesaturateIntensity);
-        Material.SetFloat(_flashInvertProperty, flashInvertIntensity);
-        Material.SetFloat(_flashContrastProperty, flashContrast);
+        material.SetFloat(_flashDesaturateProperty, flashDesaturateIntensity);
+        material.SetFloat(_flashInvertProperty, flashInvertIntensity);
+        material.SetFloat(_flashContrastProperty, flashContrast);
         flashDesaturateIntensity = 0;
         flashInvertIntensity = 0;
         flashContrast = 0;
@@ -613,11 +613,11 @@ public class PostProcessingManager : MonoBehaviour
 
     #region 暗角
 
-    [ShowInInspector]
-    [LabelText("黑白闪开关")]
-#if UNITY_EDITOR
-    [BinaryInt(8)]
-#endif
+//     [ShowInInspector]
+//     [LabelText("暗角开关")]
+// #if UNITY_EDITOR
+//     [BinaryInt(8)]
+// #endif
     public static int vignetteToggles = 0;
 
     private bool _lastIsVignette;
@@ -637,7 +637,7 @@ public class PostProcessingManager : MonoBehaviour
     private void UpdateVignette()
     {
         Vector4 vignetteVec = new Vector4(vignetteIntensity, vignetteRoundness, vignetteSmothness, 0);
-        Material.SetVector(_vignetteVecProperty,vignetteVec);
+        material.SetVector(_vignetteVecProperty,vignetteVec);
         vignetteIntensity = 0;
         vignetteRoundness = 0;
         vignetteSmothness = 0;

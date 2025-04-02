@@ -1,4 +1,4 @@
-Shader "Mh2/ColorBlit"
+Shader "XuanXuan/ColorBlit"
 {
     HLSLINCLUDE
     #pragma target 2.0

@@ -1,5 +1,5 @@
 // using ConfigSystem.MConfig;
-using Sirenix.OdinInspector;
+// using Sirenix.OdinInspector;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -10,17 +10,17 @@ namespace MhRender.RendererFeatures
     public class CustomPostProcess : ScriptableRendererFeature
     {
         private CustomPostProcessRenderPass _renderPass;
-        private DisturbanceMaskRenderPass _DisturbanceMaskRenderPass;
-        public static Material CustomedPostProcessMaterial;
-        
-        public static Material LensFlareMaterial;
-        private LensFlareRenderPass _LensFlareRenderPass;
+        private DisturbanceMaskRenderPass _disturbanceMaskRenderPass;
+        private ScreenColorRenderPass _screenColorRenderPass;
+
+        public static Material CustomPostProcessMaterial;
         
         //public MaskFormat maskFormat = MaskFormat.RG32;
         public Downsampling downSampling = Downsampling._2xBilinear;
         
-        private Material MaskMat;
-        private float screenHeight;
+        private Material _disturbanceDownSampleMat;
+        private Material _screenColorDownSampleMat;
+        private float _screenHeight;
         private ProfilingSampler _profilingSampler;
         
         // private PostProcessingManager manager;-+
@@ -68,9 +68,8 @@ namespace MhRender.RendererFeatures
         private bool canFind = false;
         public override void Create()
         {
-            if (Shader.Find("Mh2/ColorBlit") == null || 
-                Shader.Find("Mh2/Postprocess/CustomPostProcessUber") == null || 
-                Shader.Find("Mh2/Postprocess/LensFlare") == null)
+            if (Shader.Find("XuanXuan/ColorBlit") == null || 
+                Shader.Find("XuanXuan/Postprocess/CustomPostProcessUber") == null)
             {
                 canFind = false;
                 return;
@@ -80,10 +79,16 @@ namespace MhRender.RendererFeatures
                 canFind = true;
             }
             
+            _screenColorDownSampleMat = CoreUtils.CreateEngineMaterial(Shader.Find("XuanXuan/ColorBlit"));
+            _screenColorRenderPass = new ScreenColorRenderPass(_screenColorDownSampleMat, downSampling);
+            _screenColorRenderPass.renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
+
+            
             _profilingSampler = new ProfilingSampler("DisturbanceRender");
-            MaskMat = CoreUtils.CreateEngineMaterial(Shader.Find("Mh2/ColorBlit"));
-            _DisturbanceMaskRenderPass = new DisturbanceMaskRenderPass(_profilingSampler,MaskMat,downSampling);
-            _DisturbanceMaskRenderPass.renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
+            
+            _disturbanceDownSampleMat = CoreUtils.CreateEngineMaterial(Shader.Find("XuanXuan/ColorBlit"));
+            _disturbanceMaskRenderPass = new DisturbanceMaskRenderPass(_profilingSampler,_disturbanceDownSampleMat,downSampling);
+            _disturbanceMaskRenderPass.renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
             
             if (fullscreenTriangle == null)
             {
@@ -97,19 +102,17 @@ namespace MhRender.RendererFeatures
                 fullscreenTriangle.uv = GetFullScreenTriangleTexCoord();
                 fullscreenTriangle.triangles = new int[3] { 0, 1, 2 };
             }
-            
-            CustomedPostProcessMaterial = CoreUtils.CreateEngineMaterial(Shader.Find("Mh2/Postprocess/CustomPostProcessUber"));
-            LensFlareMaterial = CoreUtils.CreateEngineMaterial(Shader.Find("Mh2/Postprocess/LensFlare"));
+
+            Shader shader = Shader.Find("XuanXuan/Postprocess/CustomPostProcessUber");
+            CustomPostProcessMaterial = CoreUtils.CreateEngineMaterial(Shader.Find("XuanXuan/Postprocess/CustomPostProcessUber"));
 
      
             // if (Application.isPlaying)
             // {
             //     manager = PostProcessingManager.Instance;
             // }
-            _renderPass = new CustomPostProcessRenderPass(CustomedPostProcessMaterial,fullscreenTriangle);
+            _renderPass = new CustomPostProcessRenderPass(CustomPostProcessMaterial,fullscreenTriangle);
             _renderPass.renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
-            _LensFlareRenderPass = new LensFlareRenderPass(LensFlareMaterial);
-            _LensFlareRenderPass.renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
         }
         
         public override void SetupRenderPasses(ScriptableRenderer renderer, in RenderingData renderingData)
@@ -118,14 +121,17 @@ namespace MhRender.RendererFeatures
             if ((renderingData.cameraData.cameraType == CameraType.Game ||
                 renderingData.cameraData.cameraType == CameraType.SceneView) && canFind)
             {
-                //_DisturbanceMaskRenderPass.SetUp(renderer.cameraDepthTargetHandle);
+                //_disturbanceMaskRenderPass.SetUp(renderer.cameraDepthTargetHandle);
                 //if (renderingData.cameraData.cameraType == CameraType.Game)
                 //{
-                //    screenHeight = renderer.cameraDepthTargetHandle.rt.descriptor.height;
+                //    _screenHeight = renderer.cameraDepthTargetHandle.rt.descriptor.height;
                 //}
                 
-                _DisturbanceMaskRenderPass.ConfigureInput(ScriptableRenderPassInput.Color);
-                _DisturbanceMaskRenderPass.SetUp(renderer.cameraColorTargetHandle);
+                _disturbanceMaskRenderPass.ConfigureInput(ScriptableRenderPassInput.Color);
+                _disturbanceMaskRenderPass.SetUp(renderer.cameraColorTargetHandle);
+                
+                _screenColorRenderPass.ConfigureInput(ScriptableRenderPassInput.Color);
+                _screenColorRenderPass.SetUp(renderer.cameraColorTargetHandle);
             }
         }
 
@@ -134,9 +140,9 @@ namespace MhRender.RendererFeatures
             if ((renderingData.cameraData.cameraType == CameraType.Game ||
                 renderingData.cameraData.cameraType == CameraType.SceneView) && canFind)
             {
-                renderer.EnqueuePass(_DisturbanceMaskRenderPass);
+                renderer.EnqueuePass(_screenColorRenderPass);
+                renderer.EnqueuePass(_disturbanceMaskRenderPass);
                 renderer.EnqueuePass(_renderPass);
-                renderer.EnqueuePass(_LensFlareRenderPass);
             }
         }
         
@@ -168,9 +174,13 @@ namespace MhRender.RendererFeatures
         
         protected override void Dispose(bool disposing)
         {
-            CoreUtils.Destroy(MaskMat);
-            //CoreUtils.Destroy(CustomedPostProcessMaterial);
-            _DisturbanceMaskRenderPass?.Dispose();
+            CoreUtils.Destroy(_disturbanceDownSampleMat);
+            //CoreUtils.Destroy(CustomPostProcessMaterial);
+            _disturbanceMaskRenderPass?.Dispose();
+            CoreUtils.Destroy(_screenColorDownSampleMat);
+            _screenColorRenderPass?.Dispose();
+
+
         }
     }
     public class DisturbanceMaskRenderPass : ScriptableRenderPass
@@ -208,8 +218,6 @@ namespace MhRender.RendererFeatures
         public void SetUp(RTHandle cameraRTHandle)
         {
             RenderTextureDescriptor descrip = cameraRTHandle.rt.descriptor;
-            //descrip.width /= 1;
-            //descrip.height /= 1;
             descrip.colorFormat = RenderTextureFormat.RG32;
             descrip.depthBufferBits = 0;
             RenderingUtils.ReAllocateIfNeeded(ref _DisturbanceMaskRTHandle, descrip, name: "DisturbanceMaskRT");
@@ -349,49 +357,6 @@ namespace MhRender.RendererFeatures
             _fullScreenMesh = mesh;
             _profilingSampler ??= new ProfilingSampler("CustomPostProcess");
 
-        }
-    }
-    
-    public class LensFlareRenderPass : ScriptableRenderPass
-    {
-        private ProfilingSampler _profilingSampler;
-        public static Material _material;
-        public static Mesh _LensflareMesh;
-
-        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
-        {
-            if (!(renderingData.cameraData.cameraType == CameraType.Game || renderingData.cameraData.cameraType == CameraType.SceneView))
-                return;
-
-            if (_LensflareMesh == null)
-                return;
-            int shaderPass = Shader.GetGlobalInt("_LensFlareFlag");
-            if (shaderPass == 0)
-                return;
-
-            shaderPass = shaderPass - 1;    //0是不绘制 后续分别+1
-
-            CommandBuffer cmdBuffer = CommandBufferPool.Get();
-            cmdBuffer.Clear();
-          
-            using (new ProfilingScope(cmdBuffer,_profilingSampler))
-            {
-                //可以绘制深度记录图128x1
-                Camera camera = renderingData.cameraData.camera;
-                cmdBuffer.SetViewProjectionMatrices(Matrix4x4.identity, Matrix4x4.identity);
-                if(_material == null) return;
-                cmdBuffer.DrawMesh(_LensflareMesh, Matrix4x4.identity, _material, 0, shaderPass);
-                cmdBuffer.SetViewProjectionMatrices(camera.worldToCameraMatrix, camera.projectionMatrix);
-            }
-            
-            context.ExecuteCommandBuffer(cmdBuffer);
-            CommandBufferPool.Release(cmdBuffer);
-        }
-
-        public LensFlareRenderPass(Material mat)
-        {
-            _material = mat;
-            _profilingSampler ??= new ProfilingSampler("LensFlareEffect");
         }
     }
 }

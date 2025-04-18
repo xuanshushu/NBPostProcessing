@@ -17,6 +17,7 @@ namespace MhRender.RendererFeatures
         
         //public MaskFormat maskFormat = MaskFormat.RG32;
         public Downsampling downSampling = Downsampling._2xBilinear;
+        public LayerMask disturbanceLayerMask=1 << 25;
         
         private Material _disturbanceDownSampleMat;
         private Material _screenColorDownSampleMat;
@@ -87,7 +88,7 @@ namespace MhRender.RendererFeatures
             _profilingSampler = new ProfilingSampler("DisturbanceRender");
             
             _disturbanceDownSampleMat = CoreUtils.CreateEngineMaterial(Shader.Find("XuanXuan/ColorBlit"));
-            _disturbanceMaskRenderPass = new DisturbanceMaskRenderPass(_profilingSampler,_disturbanceDownSampleMat,downSampling);
+            _disturbanceMaskRenderPass = new DisturbanceMaskRenderPass(_profilingSampler,_disturbanceDownSampleMat,downSampling,disturbanceLayerMask);
             _disturbanceMaskRenderPass.renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
             
             if (fullscreenTriangle == null)
@@ -208,11 +209,12 @@ namespace MhRender.RendererFeatures
             new ShaderTagId("UniversalForwardOnly")
         };
 
-        public DisturbanceMaskRenderPass(ProfilingSampler profilingSampler,Material DisturbanceMaskMat, Downsampling downSampling)
+        public DisturbanceMaskRenderPass(ProfilingSampler profilingSampler,Material DisturbanceMaskMat, Downsampling downSampling,LayerMask disturbanceMaskLayer)
         {
             _profilingSampler = profilingSampler;
             _renderMaskMat = DisturbanceMaskMat;
             _downSampling = downSampling;
+            _DisturbanceMaskLayer = disturbanceMaskLayer;
         }
 
         public void SetUp(RTHandle cameraRTHandle)
@@ -313,7 +315,8 @@ namespace MhRender.RendererFeatures
         private ProfilingSampler _profilingSampler;
         public static Material _material;
         public Mesh _fullScreenMesh;
-        public Mh2CustomPostprocessFlags _shaderFlag;
+
+        public Mh2CustomPostprocessFlags _shaderFlag => PostProcessingManager.flags;
 
         private Vector4 _lastOutlineProps;
         public Vector4 outLinePorps = Vector4.one;
@@ -322,8 +325,8 @@ namespace MhRender.RendererFeatures
         {
             if (!(renderingData.cameraData.cameraType == CameraType.Game || renderingData.cameraData.cameraType == CameraType.SceneView))
                 return;
-            //Debug.Log(_shaderFlag.CheckFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_CUSTOM_POSTPROCESS_ON));
-            //if(!_shaderFlag.CheckFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_CUSTOM_POSTPROCESS_ON))return;
+   
+            if(!_shaderFlag.CheckFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_CUSTOM_POSTPROCESS_ON))return;
             
             //ConfigureTarget()
             CommandBuffer cmdBuffer = CommandBufferPool.Get();
@@ -339,11 +342,7 @@ namespace MhRender.RendererFeatures
                 cmdBuffer.DrawMesh(RenderingUtils.fullscreenMesh, Matrix4x4.identity, _material, 0, 0);
                 
                 cmdBuffer.SetViewProjectionMatrices(camera.worldToCameraMatrix, camera.projectionMatrix);
-
-                // RenderTargetIdentifier sourceIdentier = 
-                // cmdBuffer.SetGlobalMatrix(ShaderConstants._FullscreenProjMat, GL.GetGPUProjectionMatrix(Matrix4x4.identity, true));
-                // cmdBuffer.DrawMesh(_fullScreenMesh,Matrix4x4.identity,_material,0,0);
-                // Blitter.BlitTexture(cmdBuffer,);
+                
             }
             
             context.ExecuteCommandBuffer(cmdBuffer);
@@ -353,7 +352,6 @@ namespace MhRender.RendererFeatures
         public  CustomPostProcessRenderPass(Material mat,Mesh mesh)
         {
             _material = mat;
-            _shaderFlag = new Mh2CustomPostprocessFlags(_material);
             _fullScreenMesh = mesh;
             _profilingSampler ??= new ProfilingSampler("CustomPostProcess");
 

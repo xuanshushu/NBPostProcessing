@@ -5,6 +5,9 @@ using UnityEngine;
 // #if UNITY_EDITOR
 //     using Sirenix.OdinInspector.Editor;
 // #endif
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 using Unity.Cinemachine;
 
@@ -82,6 +85,10 @@ public class PostProcessingManager : MonoBehaviour
     }
     private void OnEnable()
     {
+#if UNITY_EDITOR
+        // 注册编辑器帧更新事件
+        EditorApplication.update += EditorUpdate;
+#endif
         // //TODO 后续版本要找比较准确快的找Volume的方式
         // volume = GameObject.FindObjectOfType<Volume>();
         // if (volume != null)
@@ -126,6 +133,10 @@ public class PostProcessingManager : MonoBehaviour
 
     private void OnDisable()
     {
+#if UNITY_EDITOR
+        // 注册编辑器帧更新事件
+        EditorApplication.update -= EditorUpdate;
+#endif
         flags.ClearFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_CUSTOM_POSTPROCESS_ON);
     }
 
@@ -328,11 +339,6 @@ public class PostProcessingManager : MonoBehaviour
     private bool _lastIsChromaticAberration = false;
     private readonly int _chromaticAberrationVecProperty = Shader.PropertyToID("_ChromaticAberrationVec");
     
-//     [ShowInInspector]
-//     [LabelText("色散开关")]
-// #if UNITY_EDITOR
-//     [BinaryInt(8)]
-// #endif
     public static int chromaticAberrationToggles = 0;
 
     public static bool isCaByDistort= false;
@@ -344,7 +350,7 @@ public class PostProcessingManager : MonoBehaviour
 
     private void InitChromaticAberration()
     {
-        Debug.Log("InitCA");
+        // Debug.Log("InitCA");
         flags.SetFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_CHORATICABERRAT);
     }
 
@@ -651,17 +657,17 @@ public class PostProcessingManager : MonoBehaviour
 
     #endregion
 
-    void OnDrawGizmos()
+    
+    #if UNITY_EDITOR
+    void EditorUpdate()
     {
-#if UNITY_EDITOR
-        // Ensure continuous Update calls.
         if (!Application.isPlaying)
         {
-            UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
-            UnityEditor.SceneView.RepaintAll();
+            LateUpdate();
         }
-#endif
     }
+    #endif
+
 }
 
 

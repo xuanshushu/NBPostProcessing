@@ -6,6 +6,7 @@ using Unity.Cinemachine;
 // using Unity.Cinemachine.Editor;
 #if UNITY_EDITOR
 using UnityEditor.AnimatedValues;
+using UnityEditor;
 #endif
 
 
@@ -400,12 +401,20 @@ public class PostProcessingController : MonoBehaviour
     {
         // Debug.Log("InitController");
         InitController();
+        #if UNITY_EDITOR
+            // 注册编辑器帧更新事件
+            EditorApplication.update += EditorUpdate;
+        #endif
     }
 
     private void OnDisable()
     {
         // Debug.Log("EndController");
         EndController();
+        #if UNITY_EDITOR
+                // 注册编辑器帧更新事件
+                EditorApplication.update -= EditorUpdate;
+        #endif
     }
          
     // Update is called once per frame
@@ -530,19 +539,6 @@ public class PostProcessingController : MonoBehaviour
     }
 
 
-    void OnDrawGizmos()
-    {
-#if UNITY_EDITOR
-        // Ensure continuous Update calls.
-        if (!Application.isPlaying)
-        {
-            UnityEditor.EditorApplication.QueuePlayerLoopUpdate();
-            UnityEditor.SceneView.RepaintAll();
-        }
-#endif
-    }
-
-
 #if UNITY_EDITOR
     [UnityEditor.MenuItem("GameObject/创建自定义后处理特效")]
     static void CreatMenu()
@@ -552,6 +548,14 @@ public class PostProcessingController : MonoBehaviour
         PostProcessingController controller = Effect.AddComponent<PostProcessingController>();
 
         UnityEditor.Selection.activeObject = Effect;
+    }
+    
+    void EditorUpdate()
+    {
+        if (!Application.isPlaying)
+        {
+            Update();
+        }
     }
 #endif
 }

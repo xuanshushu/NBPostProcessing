@@ -17,7 +17,9 @@ public class PostProcessingManagerGUI : Editor
         DrawToggle("色散开关",PostProcessingManager.chromaticAberrationToggles);
         DrawToggle("径向扭曲开关",PostProcessingManager.distortSpeedToggles);
         DrawToggle("径向模糊开关",PostProcessingManager.radialBlurToggles);
+        #if CINIMACHINE_3_0
         DrawToggle("震屏开关",PostProcessingManager.cameraShakeToggles);
+        #endif
         DrawToggle("肌理开关",PostProcessingManager.overlayTextureToggles);
         DrawToggle("黑白闪开关",PostProcessingManager.flashToggles);
         DrawToggle("暗角开关",PostProcessingManager.vignetteToggles);

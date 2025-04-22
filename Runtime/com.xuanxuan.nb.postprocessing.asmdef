@@ -1,5 +1,5 @@
 {
-    "name": "com.r2.render.postprocessing",
+    "name": "com.xuanxuan.nb.postprocessing",
     "rootNamespace": "",
     "references": [
         "GUID:df380645f10b7bc4b97d4f5eb6303d95",

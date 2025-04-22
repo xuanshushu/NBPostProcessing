@@ -9,8 +9,9 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
+#if CINIMACHINE_3_0
 using Unity.Cinemachine;
-
+#endif
 
 using MhRender.RendererFeatures;
 
@@ -76,8 +77,10 @@ public class PostProcessingManager : MonoBehaviour
 
     // public CinemachineBrain cameraBrain;
     // public CinemachineVirtualCamera currentVirtualCamera;
+    #if CINIMACHINE_3_0
     public CinemachineCamera currentVirtualCamera;
     private CinemachineBasicMultiChannelPerlin _perlin;
+    #endif
     
     public static void InitMat()
     {
@@ -182,23 +185,26 @@ public class PostProcessingManager : MonoBehaviour
     //每次Controller触发Play都会触发Init
     public void InitController(PostProcessingController controller)
     {
-        
+        #if CINIMACHINE_3_0
         if (controller.cinemachineCamera != null)
         {
             currentVirtualCamera = controller.cinemachineCamera;
             _perlin = currentVirtualCamera.gameObject.GetComponent<CinemachineBasicMultiChannelPerlin>();
         }
+        #endif
 
         controller.SetIndex(GetControllerIndex()); 
     }
 
     public void EndController(PostProcessingController controller)
     {
+        #if CINIMACHINE_3_0
         if (currentVirtualCamera == controller.cinemachineCamera)
         {
             currentVirtualCamera = null;
             _perlin = null;
         }
+        #endif
         
         ReleaseControllerIndex(controller.index);
         controller.SetIndex(32); //设置32为关闭index
@@ -257,11 +263,13 @@ public class PostProcessingManager : MonoBehaviour
                 _lastIsDistortSpeed = false;
             }
 
+#if CINIMACHINE_3_0
             if (_lastIsCameraShake)
             {
                 EndCameraShake();
                 _lastIsCameraShake = false;
             }
+#endif
 
             if (_lastIsOverlayTexture)
             {
@@ -297,7 +305,9 @@ public class PostProcessingManager : MonoBehaviour
                 new Vector4(customScreenCenterPos.x, customScreenCenterPos.y, 0, 0));
         }
         
+        #if CINIMACHINE_3_0
         EffectUpdater(() => { },UpdateCameraShake,EndCameraShake,ref _lastIsCameraShake,cameraShakeToggles);
+        #endif
         EffectUpdater(InitOverlayTexture, UpdateOverlayTexture, EndOverlayTexture,ref _lastIsOverlayTexture, overlayTextureToggles);
         EffectUpdater(InitFlash, UpdateFlash, EndFlash,ref _lastIsFlash, flashToggles);
         EffectUpdater(InitVignette, UpdateVignette, EndVignette,ref _lastIsVignette, vignetteToggles);
@@ -306,7 +316,9 @@ public class PostProcessingManager : MonoBehaviour
         (
             chromaticAberrationToggles|
             distortSpeedToggles|
+            #if CINIMACHINE_3_0
             cameraShakeToggles|
+            #endif
             radialBlurToggles|
             overlayTextureToggles|
             flashToggles|
@@ -498,18 +510,13 @@ public class PostProcessingManager : MonoBehaviour
     #endregion
 
     #region 震屏
-    //震屏测试
-//     [ShowInInspector]
-//     [LabelText("震屏开关")]
-// #if UNITY_EDITOR
-//     [BinaryInt(8)]
-// #endif
+    #if CINIMACHINE_3_0
+
     public static int cameraShakeToggles = 0;
 
 
     private bool _lastIsCameraShake = false;
     public static float cameraShakeIntensity = 0;
-
     private void UpdateCameraShake()
     {
         if (_perlin)
@@ -535,6 +542,7 @@ public class PostProcessingManager : MonoBehaviour
         }
         CinemachineCore.SoloCamera = null;
     }
+    #endif
     #endregion
 
     #region 肌理叠加

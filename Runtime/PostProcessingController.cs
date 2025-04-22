@@ -140,6 +140,7 @@ public class PostProcessingController : MonoBehaviour
     // [ToggleGroup("radialBlurToggle")]
     public float radialBlurRange = 0.5f;
     
+    #if CINIMACHINE_3_0
     // [OnValueChanged("SetToggles")]
     // [ToggleGroup("cameraShakeToggle", "震屏")]
     // [OnValueChanged("InitAllSettings")]
@@ -153,6 +154,7 @@ public class PostProcessingController : MonoBehaviour
     // [ToggleGroup("cameraShakeToggle")] 
     // [LabelText("相机震动强度")]
     public float cameraShakeIntensity;
+    #endif
     
     // [ToggleGroup("overlayTextureToggle", "肌理叠加图")]
     // [OnValueChanged("InitAllSettings")]
@@ -293,7 +295,9 @@ public class PostProcessingController : MonoBehaviour
     {
         SetBit(ref PostProcessingManager.chromaticAberrationToggles,index,chromaticAberrationToggle);
         SetBit(ref PostProcessingManager.distortSpeedToggles,index,distortSpeedToggle);
+        #if CINIMACHINE_3_0
         SetBit(ref PostProcessingManager.cameraShakeToggles,index,cameraShakeToggle);
+        #endif
         SetBit(ref PostProcessingManager.overlayTextureToggles,index,overlayTextureToggle);
         SetBit(ref PostProcessingManager.flashToggles,index,flashToggle);
         SetBit(ref PostProcessingManager.radialBlurToggles,index,radialBlurToggle);
@@ -309,7 +313,9 @@ public class PostProcessingController : MonoBehaviour
     {
         SetBit(ref PostProcessingManager.chromaticAberrationToggles,index,false);
         SetBit(ref PostProcessingManager.distortSpeedToggles,index,false);
+        #if CINIMACHINE_3_0
         SetBit(ref PostProcessingManager.cameraShakeToggles,index,false);
+        #endif
         SetBit(ref PostProcessingManager.overlayTextureToggles,index,false);
         SetBit(ref PostProcessingManager.flashToggles,index,false);
         SetBit(ref PostProcessingManager.radialBlurToggles,index,false);
@@ -318,7 +324,9 @@ public class PostProcessingController : MonoBehaviour
 
     private bool _lastChormaticAberrationToggle = false;
     private bool _lastDistortSpeedToggle = false;
+    #if CINIMACHINE_3_0
     private bool _lastCamerashakeToggle = false;
+    #endif
     private bool _lastOverlayTextureToggle = false;
     private bool _lastFlashToggle= false;
     private bool _lastRadialBlurToggle= false;
@@ -360,6 +368,7 @@ public class PostProcessingController : MonoBehaviour
             UnityEditor.Selection.activeObject = _manager.gameObject;
         }
 
+        #if CINIMACHINE_3_0
         // [Button("选择当前VituralCamera")]
         public void FindVirtualCamera()
         {
@@ -394,6 +403,7 @@ public class PostProcessingController : MonoBehaviour
             }
             
         }
+        #endif
 #endif
 
 
@@ -425,7 +435,9 @@ public class PostProcessingController : MonoBehaviour
         bool isToggleChanged = false;
         isToggleChanged |= checkIfToggleChanged(ref _lastChormaticAberrationToggle, chromaticAberrationToggle);
         isToggleChanged |= checkIfToggleChanged(ref _lastDistortSpeedToggle, distortSpeedToggle);
+        #if CINIMACHINE_3_0
         isToggleChanged |= checkIfToggleChanged(ref _lastCamerashakeToggle, cameraShakeToggle);
+        #endif
         isToggleChanged |= checkIfToggleChanged(ref _lastOverlayTextureToggle, overlayTextureToggle);
         isToggleChanged |= checkIfToggleChanged(ref _lastFlashToggle, flashToggle);
         isToggleChanged |= checkIfToggleChanged(ref _lastRadialBlurToggle, radialBlurToggle);
@@ -476,12 +488,14 @@ public class PostProcessingController : MonoBehaviour
                     : distortSpeedMoveSpeed;
         }
 
+        #if CINIMACHINE_3_0
         if (cameraShakeToggle)
         {
             PostProcessingManager.cameraShakeIntensity =
                 Mathf.Max(PostProcessingManager.cameraShakeIntensity, cameraShakeIntensity);
 
         }
+        #endif
 
         if (overlayTextureToggle)
         {

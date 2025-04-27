@@ -1,4 +1,4 @@
-Shader "XuanXuan/Postprocess/CustomPostProcessUber"
+Shader "XuanXuan/Postprocess/NBPostProcessUber"
 {
         Properties
         { 
@@ -16,7 +16,7 @@ Shader "XuanXuan/Postprocess/CustomPostProcessUber"
             _DeSaturateIntensity("饱和度强度",Float) = 0
             _Contrast("对比度",Float) = 1
 
-            [HideInInspector] _Mh2CustomPostprocessFlags("_Mh2CustomPostprocessFlags", Integer) = 0
+            [HideInInspector] _NBPostProcessFlags("_NBPostProcessFlags", Integer) = 0
             _ChromaticAberrationVector("色散矢量",Vector) = (1,0,0,0)
             
             _CustomScreenCenter("自定义屏幕中心",Vector) = (0.5,0.5,0,0)
@@ -108,6 +108,7 @@ Shader "XuanXuan/Postprocess/CustomPostProcessUber"
 
                 half4 SAMPLE_TEXTURE2D_CHORATICABERRAT(half2 screenUV,half2 distortUV,half2 blurVec,half distToCenter)
                 {
+                    half intensity = 1;
                     if(CheckLocalFlags(FLAG_BIT_CHORATICABERRAT_BY_DISTORT))
                     {
                         blurVec = blurVec*0.1*_ChromaticAberrationVec.x;
@@ -115,18 +116,13 @@ Shader "XuanXuan/Postprocess/CustomPostProcessUber"
                     else
                     {
                         _ChromaticAberrationVec.z*=0.5f;
-                        half intensity = Mh2Remap(distToCenter,_ChromaticAberrationVec.y-_ChromaticAberrationVec.z,_ChromaticAberrationVec.y+_ChromaticAberrationVec.z,0,1);
+                        intensity = NB_Remap(distToCenter,_ChromaticAberrationVec.y-_ChromaticAberrationVec.z,_ChromaticAberrationVec.y+_ChromaticAberrationVec.z,0,1);
                         blurVec = blurVec*0.25*_ChromaticAberrationVec.x*intensity;
                     }
                     half r = SAMPLE_TEXTURE2D_X(_ScreenColorCopy1, sampler_LinearClamp, screenUV + distortUV             ).x;
                     half g = SAMPLE_TEXTURE2D_X(_ScreenColorCopy1, sampler_LinearClamp, blurVec + screenUV + distortUV     ).y;
                     half b = SAMPLE_TEXTURE2D_X(_ScreenColorCopy1, sampler_LinearClamp, blurVec * 2.0 + screenUV + distortUV).z;
-                    // half r = SAMPLE_TEXTURE2D_X(_ScreenColorCopy1, sampler_LinearClamp, screenUV + distortUV             ).x;
-                    // half g = SAMPLE_TEXTURE2D_X(_ScreenColorCopy1, sampler_LinearClamp, blurVec + screenUV + distortUV     ).y;
-                    // half b = SAMPLE_TEXTURE2D_X(_ScreenColorCopy1, sampler_LinearClamp, -blurVec  + screenUV + distortUV).z;
-                    //    half r = SAMPLE_TEXTURE2D_X(_ScreenColorCopy1, sampler_LinearClamp, screenUV             ).x;
-                    // half g = SAMPLE_TEXTURE2D_X(_ScreenColorCopy1, sampler_LinearClamp, blurVec + screenUV    ).y;
-                    // half b = SAMPLE_TEXTURE2D_X(_ScreenColorCopy1, sampler_LinearClamp, -blurVec  + screenUV ).z;
+
                     half a = dot(blurVec,blurVec)*100000;
                     return half4(r,g,b,a);
                 }
@@ -163,7 +159,7 @@ Shader "XuanXuan/Postprocess/CustomPostProcessUber"
                     screenUV += disturbanceMask;
                     
                     UNITY_BRANCH
-                    if (!CheckLocalFlags(FLAG_BIT_CUSTOM_POSTPROCESS_ON))
+                    if (!CheckLocalFlags(FLAG_BIT_NB_POSTPROCESS_ON))
                     {
                         color.rgb = SAMPLE_TEXTURE2D(_ScreenColorCopy1, _linear_clamp, screenUV).rgb;
                     }
@@ -247,7 +243,7 @@ Shader "XuanXuan/Postprocess/CustomPostProcessUber"
                             else
                             {
                                 _RadialBlurVec.z *= 0.5;
-                                half rangeIntensity = Mh2Remap(dist,_RadialBlurVec.y-_RadialBlurVec.z,_RadialBlurVec.y+_RadialBlurVec.z,0,1);
+                                half rangeIntensity = NB_Remap(dist,_RadialBlurVec.y-_RadialBlurVec.z,_RadialBlurVec.y+_RadialBlurVec.z,0,1);
                                 rangeIntensity = saturate(rangeIntensity);
                                 radialblurVec  =  blurVec*_RadialBlurVec.x*rangeIntensity;
                             }
@@ -349,7 +345,7 @@ Shader "XuanXuan/Postprocess/CustomPostProcessUber"
                     // float finalIntensity = (_SpeedDistortVec.x+ _TextureOverlayIntensity +_InvertIntensity +(1- _DeSaturateIntensity)+_Contrast)*2;
                     // finalIntensity = saturate(finalIntensity);
 
-                    
+                    // return half4(saturate(color.a).rrr,1);
                     
                     return half4(color.rgb,saturate(color.a));
                 }

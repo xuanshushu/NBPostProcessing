@@ -267,11 +267,11 @@ public class PostProcessingController : MonoBehaviour
         {
             if (overlayTexturePolarCoordMode)
             {
-                PostProcessingManager.flags.SetFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_OVERLAYTEXTURE_POLLARCOORD);
+                PostProcessingManager.flags.SetFlagBits(NBPostProcessFlags.FLAG_BIT_OVERLAYTEXTURE_POLLARCOORD);
             }
             else
             {
-                PostProcessingManager.flags.ClearFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_OVERLAYTEXTURE_POLLARCOORD);
+                PostProcessingManager.flags.ClearFlagBits(NBPostProcessFlags.FLAG_BIT_OVERLAYTEXTURE_POLLARCOORD);
             }
             if (overlayTexture)
             {
@@ -281,11 +281,11 @@ public class PostProcessingController : MonoBehaviour
             if (overlayMaskTexture)
             {
                 PostProcessingManager.material.SetTexture(_textureOverlayMaskProperty,overlayMaskTexture);
-                PostProcessingManager.flags.SetFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_OVERLAYTEXTURE_MASKMAP);
+                PostProcessingManager.flags.SetFlagBits(NBPostProcessFlags.FLAG_BIT_OVERLAYTEXTURE_MASKMAP);
             }
             else
             {
-                PostProcessingManager.flags.ClearFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_OVERLAYTEXTURE_MASKMAP);
+                PostProcessingManager.flags.ClearFlagBits(NBPostProcessFlags.FLAG_BIT_OVERLAYTEXTURE_MASKMAP);
             }
         }
         
@@ -413,7 +413,8 @@ public class PostProcessingController : MonoBehaviour
         InitController();
         #if UNITY_EDITOR
             // 注册编辑器帧更新事件
-            EditorApplication.update += EditorUpdate;
+            EditorApplication.update += ControllerEditorUpdate;
+            _manager.ReRegistEditorUpdate();//保证Manager的注册在最后
         #endif
     }
 
@@ -423,13 +424,19 @@ public class PostProcessingController : MonoBehaviour
         EndController();
         #if UNITY_EDITOR
                 // 注册编辑器帧更新事件
-                EditorApplication.update -= EditorUpdate;
+                EditorApplication.update -= ControllerEditorUpdate;
         #endif
     }
          
+    bool isFirstUpdate = true;
     // Update is called once per frame
     void Update()
     {
+        if (isFirstUpdate)
+        {
+            isFirstUpdate = false;
+            return;
+        }
 //#if UNITY_EDITOR
         //Odin的ToggleGroup和OnValueChange功能冲突，导致不一定生效。不好调试。所以用手动的方式更新。
         bool isToggleChanged = false;
@@ -554,17 +561,17 @@ public class PostProcessingController : MonoBehaviour
 
 
 #if UNITY_EDITOR
-    [UnityEditor.MenuItem("GameObject/创建自定义后处理特效")]
+    [UnityEditor.MenuItem("GameObject/创建NB后处理特效")]
     static void CreatMenu()
     {
         GameObject Effect = new GameObject();
-        Effect.name = "CustomPostprocessController";
+        Effect.name = "NBPostprocessController";
         PostProcessingController controller = Effect.AddComponent<PostProcessingController>();
 
         UnityEditor.Selection.activeObject = Effect;
     }
     
-    void EditorUpdate()
+    void ControllerEditorUpdate()
     {
         if (!Application.isPlaying)
         {

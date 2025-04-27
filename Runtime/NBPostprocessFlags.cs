@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 
-public class Mh2CustomPostprocessFlags: ShaderFlagsBase
+public class NBPostProcessFlags: ShaderFlagsBase
 {
-    public const string FlagsName = "_Mh2CustomPostprocessFlags";
+    public const string FlagsName = "_NBPostProcessFlags";
     public static int FlagsId = Shader.PropertyToID(FlagsName);
     
     protected override int GetShaderFlagsId(int index = 0)
@@ -15,11 +15,11 @@ public class Mh2CustomPostprocessFlags: ShaderFlagsBase
         return FlagsName;
     }
 
-    public Mh2CustomPostprocessFlags(Material material = null): base(material)
+    public NBPostProcessFlags(Material material = null): base(material)
     {
     }
     
-    public const int FLAG_BIT_CUSTOM_POSTPROCESS_ON = 1 << 0;
+    public const int FLAG_BIT_NB_POSTPROCESS_ON = 1 << 0;
     public const int FLAG_BIT_DISTORT_SPEED = 1 << 1;
     public const int FLAG_BIT_OVERLAYTEXTURE = 1 << 2;
     public const int FLAG_BIT_FLASH = 1 << 3;

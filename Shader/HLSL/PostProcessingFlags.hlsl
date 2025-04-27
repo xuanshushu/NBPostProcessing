@@ -3,8 +3,8 @@
 
 
 #if defined(CUSTOM_POSTPROCESS)
-    uint _Mh2CustomPostprocessFlags;
-    #define FLAG_BIT_CUSTOM_POSTPROCESS_ON (1 << 0)
+    uint _NBPostProcessFlags;
+    #define FLAG_BIT_NB_POSTPROCESS_ON (1 << 0)
     #define FLAG_BIT_DISTORT_SPEED (1 << 1)
     #define FLAG_BIT_OVERLAYTEXTURE (1 << 2)
     #define FLAG_BIT_FLASH (1 << 3)
@@ -21,7 +21,7 @@
 
     bool CheckLocalFlags(uint bits)
     {
-        return (_Mh2CustomPostprocessFlags&bits) != 0;
+        return (_NBPostProcessFlags&bits) != 0;
     }
 #endif
 

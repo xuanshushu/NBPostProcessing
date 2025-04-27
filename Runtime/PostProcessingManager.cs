@@ -35,12 +35,12 @@ public class PostProcessingManager : MonoBehaviour
                     _instance = singletonObj.AddComponent<PostProcessingManager>();
                     if (Application.isPlaying)
                     {
-                        singletonObj.name = "PostProcessManager";
+                        singletonObj.name = "NBPostProcessManager";
                         DontDestroyOnLoad(singletonObj);
                     }
                     else
                     {
-                        singletonObj.name = "测试用后处理脚本，请美术删除此脚本再上传";
+                        singletonObj.name = "测试用NB后处理管理器，请美术删除此脚本再上传";
                     }
                 }
             }
@@ -69,11 +69,11 @@ public class PostProcessingManager : MonoBehaviour
     {
         get
         {
-            return CustomPostProcess.CustomPostProcessMaterial;
+            return NBPostProcess.NBPostProcessMaterial;
         }
     }
     
-    public static Mh2CustomPostprocessFlags flags = new Mh2CustomPostprocessFlags(material);
+    public static NBPostProcessFlags flags = new NBPostProcessFlags(material);
 
     // public CinemachineBrain cameraBrain;
     // public CinemachineVirtualCamera currentVirtualCamera;
@@ -129,7 +129,7 @@ public class PostProcessingManager : MonoBehaviour
         
         
         //重置Flag
-        flags = new Mh2CustomPostprocessFlags(material);
+        flags = new NBPostProcessFlags(material);
         flags.SetFlagBits(0);
         
     }
@@ -140,7 +140,7 @@ public class PostProcessingManager : MonoBehaviour
         // 注册编辑器帧更新事件
         EditorApplication.update -= EditorUpdate;
 #endif
-        flags.ClearFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_CUSTOM_POSTPROCESS_ON);
+        flags.ClearFlagBits(NBPostProcessFlags.FLAG_BIT_NB_POSTPROCESS_ON);
     }
 
 
@@ -232,8 +232,17 @@ public class PostProcessingManager : MonoBehaviour
 
 
     }
+
+    private bool isFirstUpdate = true;
+    
     private void LateUpdate()//晚于所有脚本触发。
     {
+        if (isFirstUpdate)
+        {
+            isFirstUpdate = false;
+            return;
+        }
+        
         /*
 #if UNITY_EDITOR
         if (flags.GetMaterial() != PostProcessingManager.material)
@@ -289,7 +298,7 @@ public class PostProcessingManager : MonoBehaviour
                 _lastIsVignette = false;
             }
 
-            flags.ClearFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_CUSTOM_POSTPROCESS_ON);
+            flags.ClearFlagBits(NBPostProcessFlags.FLAG_BIT_NB_POSTPROCESS_ON);
             return;
         }
         
@@ -327,11 +336,11 @@ public class PostProcessingManager : MonoBehaviour
 
         if (hasEffect)
         {
-            flags.SetFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_CUSTOM_POSTPROCESS_ON);
+            flags.SetFlagBits(NBPostProcessFlags.FLAG_BIT_NB_POSTPROCESS_ON);
         }
         else
         {
-            flags.ClearFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_CUSTOM_POSTPROCESS_ON);
+            flags.ClearFlagBits(NBPostProcessFlags.FLAG_BIT_NB_POSTPROCESS_ON);
         }
     }
 
@@ -363,7 +372,7 @@ public class PostProcessingManager : MonoBehaviour
     private void InitChromaticAberration()
     {
         // Debug.Log("InitCA");
-        flags.SetFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_CHORATICABERRAT);
+        flags.SetFlagBits(NBPostProcessFlags.FLAG_BIT_CHORATICABERRAT);
     }
 
     private void UpdateChromaticAberration()
@@ -372,11 +381,11 @@ public class PostProcessingManager : MonoBehaviour
         {
             if (isCaByDistort)
             {
-                flags.SetFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_CHORATICABERRAT_BY_DISTORT);
+                flags.SetFlagBits(NBPostProcessFlags.FLAG_BIT_CHORATICABERRAT_BY_DISTORT);
             }
             else
             {
-                flags.ClearFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_CHORATICABERRAT_BY_DISTORT);
+                flags.ClearFlagBits(NBPostProcessFlags.FLAG_BIT_CHORATICABERRAT_BY_DISTORT);
             }
 
             _lastIsCaByDistort = isCaByDistort;
@@ -390,7 +399,7 @@ public class PostProcessingManager : MonoBehaviour
     private void EndChromaticAberration()
     {
         // Debug.Log("EndCA");
-        flags.ClearFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_CHORATICABERRAT);
+        flags.ClearFlagBits(NBPostProcessFlags.FLAG_BIT_CHORATICABERRAT);
     }
     #endregion
     
@@ -420,7 +429,7 @@ public class PostProcessingManager : MonoBehaviour
 
     private void InitDistortSpeed()
     {
-        flags.SetFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_DISTORT_SPEED); 
+        flags.SetFlagBits(NBPostProcessFlags.FLAG_BIT_DISTORT_SPEED); 
     }
 
     private void UpdateDistortSpeed()
@@ -429,11 +438,11 @@ public class PostProcessingManager : MonoBehaviour
         {
             if (isDistortScreenUVMode)
             {
-                flags.SetFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_POST_DISTORT_SCREEN_UV);
+                flags.SetFlagBits(NBPostProcessFlags.FLAG_BIT_POST_DISTORT_SCREEN_UV);
             }
             else
             {
-                flags.ClearFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_POST_DISTORT_SCREEN_UV);
+                flags.ClearFlagBits(NBPostProcessFlags.FLAG_BIT_POST_DISTORT_SCREEN_UV);
             }
             _lastIsDistortScreenUVMode = isDistortScreenUVMode;
         }
@@ -451,7 +460,7 @@ public class PostProcessingManager : MonoBehaviour
 
     private void EndDistortSpeed()
     {
-        flags.ClearFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_DISTORT_SPEED);
+        flags.ClearFlagBits(NBPostProcessFlags.FLAG_BIT_DISTORT_SPEED);
     }
     #endregion
 
@@ -475,7 +484,7 @@ public class PostProcessingManager : MonoBehaviour
     private void InitRadialBlur()
     {
         // Debug.Log("InitRB");
-        flags.SetFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_RADIALBLUR);
+        flags.SetFlagBits(NBPostProcessFlags.FLAG_BIT_RADIALBLUR);
     }
 
     private void UpdateRadialBlur()
@@ -484,11 +493,11 @@ public class PostProcessingManager : MonoBehaviour
         {
             if (isRadialBlurByDistort)
             {
-                flags.SetFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_RADIALBLUR_BY_DISTORT);
+                flags.SetFlagBits(NBPostProcessFlags.FLAG_BIT_RADIALBLUR_BY_DISTORT);
             }
             else
             {
-                flags.ClearFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_RADIALBLUR_BY_DISTORT);
+                flags.ClearFlagBits(NBPostProcessFlags.FLAG_BIT_RADIALBLUR_BY_DISTORT);
             }
 
             _lastIsRadialBlurByDistort = isRadialBlurByDistort;
@@ -504,7 +513,7 @@ public class PostProcessingManager : MonoBehaviour
     private void EndRadialBlur()
     {
         // Debug.Log("EndRB");
-        flags.ClearFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_RADIALBLUR);
+        flags.ClearFlagBits(NBPostProcessFlags.FLAG_BIT_RADIALBLUR);
     }
 
     #endregion
@@ -566,7 +575,7 @@ public class PostProcessingManager : MonoBehaviour
 
     private void InitOverlayTexture()
     {
-        flags.SetFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_OVERLAYTEXTURE);
+        flags.SetFlagBits(NBPostProcessFlags.FLAG_BIT_OVERLAYTEXTURE);
     }
 
     private void UpdateOverlayTexture()
@@ -577,7 +586,7 @@ public class PostProcessingManager : MonoBehaviour
 
     private void EndOverlayTexture()
     {
-        flags.ClearFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_OVERLAYTEXTURE);
+        flags.ClearFlagBits(NBPostProcessFlags.FLAG_BIT_OVERLAYTEXTURE);
     }
 
     #endregion
@@ -606,7 +615,7 @@ public class PostProcessingManager : MonoBehaviour
 
     private void InitFlash()
     {
-        flags.SetFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_FLASH);
+        flags.SetFlagBits(NBPostProcessFlags.FLAG_BIT_FLASH);
     }
 
     private void UpdateFlash()
@@ -621,7 +630,7 @@ public class PostProcessingManager : MonoBehaviour
 
     private void EndFlash()
     {
-        flags.ClearFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_FLASH);
+        flags.ClearFlagBits(NBPostProcessFlags.FLAG_BIT_FLASH);
     }
     #endregion
 
@@ -644,7 +653,7 @@ public class PostProcessingManager : MonoBehaviour
 
     private void InitVignette()
     {
-        flags.SetFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_VIGNETTE);    
+        flags.SetFlagBits(NBPostProcessFlags.FLAG_BIT_VIGNETTE);    
     }
     
 
@@ -659,7 +668,7 @@ public class PostProcessingManager : MonoBehaviour
 
     private void EndVignette()
     {
-        flags.ClearFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_VIGNETTE);
+        flags.ClearFlagBits(NBPostProcessFlags.FLAG_BIT_VIGNETTE);
     }
     
 
@@ -671,8 +680,14 @@ public class PostProcessingManager : MonoBehaviour
     {
         if (!Application.isPlaying)
         {
-            LateUpdate();
+            LateUpdate();//每帧Update会导致SceneView闪
         }
+    }
+
+    public void ReRegistEditorUpdate()
+    {
+        EditorApplication.update -= EditorUpdate;
+        EditorApplication.update += EditorUpdate;
     }
     #endif
 

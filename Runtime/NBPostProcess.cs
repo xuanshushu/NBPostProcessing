@@ -7,13 +7,13 @@ using System.Collections.Generic;
 
 namespace MhRender.RendererFeatures
 {
-    public class CustomPostProcess : ScriptableRendererFeature
+    public class NBPostProcess : ScriptableRendererFeature
     {
-        private CustomPostProcessRenderPass _renderPass;
+        private NBPostProcessRenderPass _renderPass;
         private DisturbanceMaskRenderPass _disturbanceMaskRenderPass;
         private ScreenColorRenderPass _screenColorRenderPass;
 
-        public static Material CustomPostProcessMaterial;
+        public static Material NBPostProcessMaterial;
         
         //public MaskFormat maskFormat = MaskFormat.RG32;
         public Downsampling downSampling = Downsampling._2xBilinear;
@@ -70,7 +70,7 @@ namespace MhRender.RendererFeatures
         public override void Create()
         {
             if (Shader.Find("XuanXuan/ColorBlit") == null || 
-                Shader.Find("XuanXuan/Postprocess/CustomPostProcessUber") == null)
+                Shader.Find("XuanXuan/Postprocess/NBPostProcessUber") == null)
             {
                 canFind = false;
                 return;
@@ -104,15 +104,15 @@ namespace MhRender.RendererFeatures
                 fullscreenTriangle.triangles = new int[3] { 0, 1, 2 };
             }
 
-            Shader shader = Shader.Find("XuanXuan/Postprocess/CustomPostProcessUber");
-            CustomPostProcessMaterial = CoreUtils.CreateEngineMaterial(Shader.Find("XuanXuan/Postprocess/CustomPostProcessUber"));
+            Shader shader = Shader.Find("XuanXuan/Postprocess/NBPostProcessUber");
+            NBPostProcessMaterial = CoreUtils.CreateEngineMaterial(Shader.Find("XuanXuan/Postprocess/NBPostProcessUber"));
 
      
             // if (Application.isPlaying)
             // {
             //     manager = PostProcessingManager.Instance;
             // }
-            _renderPass = new CustomPostProcessRenderPass(CustomPostProcessMaterial,fullscreenTriangle);
+            _renderPass = new NBPostProcessRenderPass(NBPostProcessMaterial,fullscreenTriangle);
             _renderPass.renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
         }
         
@@ -176,7 +176,7 @@ namespace MhRender.RendererFeatures
         protected override void Dispose(bool disposing)
         {
             CoreUtils.Destroy(_disturbanceDownSampleMat);
-            //CoreUtils.Destroy(CustomPostProcessMaterial);
+            //CoreUtils.Destroy(NBPostProcessMaterial);
             _disturbanceMaskRenderPass?.Dispose();
             CoreUtils.Destroy(_screenColorDownSampleMat);
             _screenColorRenderPass?.Dispose();
@@ -310,13 +310,13 @@ namespace MhRender.RendererFeatures
             _DownRT?.Release();
         }
     }
-    public class CustomPostProcessRenderPass : ScriptableRenderPass
+    public class NBPostProcessRenderPass : ScriptableRenderPass
     {
         private ProfilingSampler _profilingSampler;
         public static Material _material;
         public Mesh _fullScreenMesh;
 
-        public Mh2CustomPostprocessFlags _shaderFlag => PostProcessingManager.flags;
+        public NBPostProcessFlags _shaderFlag => PostProcessingManager.flags;
 
         private Vector4 _lastOutlineProps;
         public Vector4 outLinePorps = Vector4.one;
@@ -326,12 +326,12 @@ namespace MhRender.RendererFeatures
             if (!(renderingData.cameraData.cameraType == CameraType.Game || renderingData.cameraData.cameraType == CameraType.SceneView))
                 return;
    
-            if(!_shaderFlag.CheckFlagBits(Mh2CustomPostprocessFlags.FLAG_BIT_CUSTOM_POSTPROCESS_ON))return;
+            if(!_shaderFlag.CheckFlagBits(NBPostProcessFlags.FLAG_BIT_NB_POSTPROCESS_ON))return;
             
             //ConfigureTarget()
             CommandBuffer cmdBuffer = CommandBufferPool.Get();
             cmdBuffer.Clear();
-            // cmdBuffer.name = "CustomPostProcess";
+            // cmdBuffer.name = "NBPostProcess";
           
             using (new ProfilingScope(cmdBuffer,_profilingSampler))
             {
@@ -349,11 +349,11 @@ namespace MhRender.RendererFeatures
             CommandBufferPool.Release(cmdBuffer);
         }
 
-        public  CustomPostProcessRenderPass(Material mat,Mesh mesh)
+        public  NBPostProcessRenderPass(Material mat,Mesh mesh)
         {
             _material = mat;
             _fullScreenMesh = mesh;
-            _profilingSampler ??= new ProfilingSampler("CustomPostProcess");
+            _profilingSampler ??= new ProfilingSampler("NBPostProcess");
 
         }
     }

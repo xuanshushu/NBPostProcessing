@@ -108,15 +108,15 @@ Shader "XuanXuan/Postprocess/NBPostProcessUber"
 
                 half4 SAMPLE_TEXTURE2D_CHORATICABERRAT(half2 screenUV,half2 distortUV,half2 blurVec,half distToCenter)
                 {
-                    half intensity = 1;
                     if(CheckLocalFlags(FLAG_BIT_CHORATICABERRAT_BY_DISTORT))
                     {
-                        blurVec = blurVec*0.1*_ChromaticAberrationVec.x;
+                        blurVec = blurVec*0.25*_ChromaticAberrationVec.x;
                     }
                     else
                     {
-                        _ChromaticAberrationVec.z*=0.5f;
-                        intensity = NB_Remap(distToCenter,_ChromaticAberrationVec.y-_ChromaticAberrationVec.z,_ChromaticAberrationVec.y+_ChromaticAberrationVec.z,0,1);
+                        half intensity = 1;
+                        half range = _ChromaticAberrationVec.z*0.5f;
+                        intensity = NB_Remap(distToCenter,_ChromaticAberrationVec.y-range,_ChromaticAberrationVec.y+range,0,1);
                         blurVec = blurVec*0.25*_ChromaticAberrationVec.x*intensity;
                     }
                     half r = SAMPLE_TEXTURE2D_X(_ScreenColorCopy1, sampler_LinearClamp, screenUV + distortUV             ).x;
@@ -157,7 +157,7 @@ Shader "XuanXuan/Postprocess/NBPostProcessUber"
                     
                     color.a = SimpleSmoothstep(0,0.01,abs(disturbanceMask.x + disturbanceMask.y));
                     screenUV += disturbanceMask;
-                    
+                 
                     UNITY_BRANCH
                     if (!CheckLocalFlags(FLAG_BIT_NB_POSTPROCESS_ON))
                     {
@@ -201,6 +201,10 @@ Shader "XuanXuan/Postprocess/NBPostProcessUber"
 
                         color.a += dot(distortUV,distortUV)*100000;
                     }
+                    else
+                    {
+                        distortUVWithoutIntensity = disturbanceMask;
+                    }
                   
                     // return half4(((dot(distortUV,distortUV)*100000)).rrr,1);
                     
@@ -227,8 +231,8 @@ Shader "XuanXuan/Postprocess/NBPostProcessUber"
                             {
                                 choraticaBerratBlurVec = blurVec;
                             }
-                            
                         }
+                        
                             
 
                         

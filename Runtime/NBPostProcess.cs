@@ -104,7 +104,7 @@ namespace MhRender.RendererFeatures
                 fullscreenTriangle.triangles = new int[3] { 0, 1, 2 };
             }
 
-            Shader shader = Shader.Find("XuanXuan/Postprocess/NBPostProcessUber");
+            // Shader shader = Shader.Find("XuanXuan/Postprocess/NBPostProcessUber");
             NBPostProcessMaterial = CoreUtils.CreateEngineMaterial(Shader.Find("XuanXuan/Postprocess/NBPostProcessUber"));
 
      
@@ -326,7 +326,7 @@ namespace MhRender.RendererFeatures
             if (!(renderingData.cameraData.cameraType == CameraType.Game || renderingData.cameraData.cameraType == CameraType.SceneView))
                 return;
    
-            if(!_shaderFlag.CheckFlagBits(NBPostProcessFlags.FLAG_BIT_NB_POSTPROCESS_ON))return;
+            // if(!_shaderFlag.CheckFlagBits(NBPostProcessFlags.FLAG_BIT_NB_POSTPROCESS_ON))return;//Disturbance需要执行
             
             //ConfigureTarget()
             CommandBuffer cmdBuffer = CommandBufferPool.Get();

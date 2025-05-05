@@ -31,6 +31,8 @@ namespace MhRender.RendererFeatures
             _profilingSampler ??= new ProfilingSampler("ScreenColorRender");
             _screenColorHandle = colorHandle;
             RenderTextureDescriptor descriptor = _screenColorHandle.rt.descriptor;
+            descriptor.autoGenerateMips = true;
+            descriptor.useMipMap = true;
             switch (_downSampling)
             {
                 case Downsampling._2xBilinear:

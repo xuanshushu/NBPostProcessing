@@ -56,7 +56,7 @@ public class PostProcessingControllerGUI : Editor
                         EditorGUILayout.FloatField("色散位置", ppController.chromaticAberrationPos);
 
                     ppController.chromaticAberrationRange =
-                        EditorGUILayout.FloatField("色散过度范围", ppController.chromaticAberrationRange);
+                        EditorGUILayout.FloatField("色散过渡范围", ppController.chromaticAberrationRange);
                 }
             });
 
@@ -74,20 +74,24 @@ public class PostProcessingControllerGUI : Editor
 
                 EditorGUI.BeginChangeCheck();
                 ppController.distortSpeedTexture =
-                    (Texture2D)EditorGUILayout.ObjectField("后处理扭曲", ppController.distortSpeedTexture,
+                    (Texture2D)EditorGUILayout.ObjectField("后处理扭曲贴图", ppController.distortSpeedTexture,
                         typeof(Texture2D));
                 if (EditorGUI.EndChangeCheck())
                 {
                     ReflectMethod("InitAllSettings", ppController);
                 }
 
-                EditorGUI.BeginChangeCheck();
-                ppController.distortTextureMidValue =
-                    EditorGUILayout.FloatField("扭曲贴图中间值", ppController.distortTextureMidValue);
-                if (EditorGUI.EndChangeCheck())
+                if (ppController.distortScreenUVMode)
                 {
-                    ReflectMethod("SetTexture", ppController);
+                    EditorGUI.BeginChangeCheck();
+                    ppController.distortTextureMidValue =
+                        EditorGUILayout.FloatField("扭曲贴图中间值", ppController.distortTextureMidValue);
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        ReflectMethod("SetTexture", ppController);
+                    }
                 }
+
 
                 ppController.distortSpeedTexSt = EditorGUILayout.Vector4Field("扭曲贴图ST", ppController.distortSpeedTexSt);
 
@@ -98,7 +102,7 @@ public class PostProcessingControllerGUI : Editor
                 {
                     ppController.distortSpeedPosition =
                         EditorGUILayout.FloatField("扭曲位置", ppController.distortSpeedPosition);
-                    ppController.distortSpeedRange = EditorGUILayout.FloatField("扭曲范围", ppController.distortSpeedRange);
+                    ppController.distortSpeedRange = EditorGUILayout.FloatField("扭曲过渡范围", ppController.distortSpeedRange);
                 }
 
                 ppController.distortSpeedMoveSpeedX =
@@ -126,7 +130,7 @@ public class PostProcessingControllerGUI : Editor
                 if (!ppController.radialBlurFromDistort)
                 {
                     ppController.radialBlurPos = EditorGUILayout.FloatField("位置", ppController.radialBlurPos);
-                    ppController.radialBlurRange = EditorGUILayout.FloatField("过度范围", ppController.radialBlurRange);
+                    ppController.radialBlurRange = EditorGUILayout.FloatField("过渡范围", ppController.radialBlurRange);
                 }
             });
 

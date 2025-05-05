@@ -181,7 +181,7 @@ Shader "XuanXuan/Postprocess/NBPostProcessUber"
                         {
                             distortSpeedUV = screenUV* _SpeedDistortMap_ST.xy+_SpeedDistortMap_ST.zw;
                             half2 noise = SAMPLE_TEXTURE2D(_SpeedDistortMap,sampler_SpeedDistortMap,distortSpeedUV);
-                            noise = noise * 2-1+_SpeedDistortVec.w*0.0001;
+                            noise = noise * 2-1+_SpeedDistortVec.w*0.1;
                             half distortStrength = _SpeedDistortVec.x * 0.2;
                             distortUVWithoutIntensity = noise;
                             distortUV = noise * distortStrength;

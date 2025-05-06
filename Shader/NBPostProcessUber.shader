@@ -309,8 +309,12 @@ Shader "XuanXuan/Postprocess/NBPostProcessUber"
                         overlayMainTexUV = UVOffsetAnimaiton(overlayMainTexUV,_TextureOverlayAnim.xy,_Time.y);
                         half4 overlayTexSample = SAMPLE_TEXTURE2D(_TextureOverlay,sampler_TextureOverlay,overlayMainTexUV);
 
-                        float2 overlayTexMaskUV = TRANSFORM_TEX(overlayTexUV,_TextureOverlayMask);
-                        half overlayTexMask = SAMPLE_TEXTURE2D(_TextureOverlayMask,sampler_TextureOverlayMask,overlayTexMaskUV);
+                        half overlayTexMask = 1;
+                        if (CheckLocalFlags(FLAG_BIT_OVERLAYTEXTURE_MASKMAP))
+                        {
+                            float2 overlayTexMaskUV = TRANSFORM_TEX(overlayTexUV,_TextureOverlayMask);
+                            overlayTexMask = SAMPLE_TEXTURE2D(_TextureOverlayMask,sampler_TextureOverlayMask,overlayTexMaskUV);
+                        }
                         color.rgb *= lerp(1,overlayTexSample.rgb,overlayTexSample.a*_TextureOverlayIntensity*overlayTexMask);
                         // return half4( lerp(overlayTexSample.rgb,1,overlayTexSample.a*_TextureOverlayIntensity),1);
                         color.a += _TextureOverlayIntensity;

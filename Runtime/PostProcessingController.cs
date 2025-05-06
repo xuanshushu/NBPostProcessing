@@ -236,6 +236,7 @@ public class PostProcessingController : MonoBehaviour
         SetToggles();
         SetUVFromDistort();
         SetTexture();
+        InitCinemachineCamera();
     }
 
     void SetScreenCenterPos()
@@ -275,16 +276,19 @@ public class PostProcessingController : MonoBehaviour
             }
             if (overlayTexture)
             {
+                Debug.Log("SetOverlayTexture");
                 PostProcessingManager.material.SetTexture(_overlayTextureID,overlayTexture);
             }
 
             if (overlayMaskTexture)
             {
+                Debug.Log("SetOverlayMaskTexture");
                 PostProcessingManager.material.SetTexture(_textureOverlayMaskProperty,overlayMaskTexture);
                 PostProcessingManager.flags.SetFlagBits(NBPostProcessFlags.FLAG_BIT_OVERLAYTEXTURE_MASKMAP);
             }
             else
             {
+                Debug.Log("ClearOverlayMaskTexture");
                 PostProcessingManager.flags.ClearFlagBits(NBPostProcessFlags.FLAG_BIT_OVERLAYTEXTURE_MASKMAP);
             }
         }
@@ -389,7 +393,7 @@ public class PostProcessingController : MonoBehaviour
                 {
                     _perlin.NoiseProfile =
                             UnityEditor.AssetDatabase.LoadAssetAtPath<NoiseSettings>(
-                                "Packages/com.r2.render.postprocessing/3DPostionShake.asset");
+                                "Packages/com.xuanxuan.nb.postprocessing/3DPostionShake.asset");
                     _perlin.FrequencyGain = 5f; //做一个自定义
                     _perlin.AmplitudeGain = 0f; //一开始先不要震动
                 }

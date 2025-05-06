@@ -147,7 +147,8 @@ public class PostProcessingControllerGUI : Editor
                 ppController.cinemachineCamera = (CinemachineCamera)EditorGUILayout.ObjectField("绑定Cinemachine相机", ppController.cinemachineCamera, typeof(CinemachineCamera));
                 if (EditorGUI.EndChangeCheck())
                 {
-                    ReflectMethod("InitCinemachineCamera",ppController);
+                    // ReflectMethod("InitCinemachineCamera",ppController);
+                    ppController.InitCinemachineCamera();
                 }
 
                 ppController.cameraShakeIntensity =
@@ -177,14 +178,14 @@ public class PostProcessingControllerGUI : Editor
                     EditorGUILayout.FloatField("肌理图强度", ppController.overlayTextureIntensity);
                 
                 EditorGUI.BeginChangeCheck();
-                ppController.overlayMaskTexture = (Texture2D)EditorGUILayout.ObjectField("肌理图", ppController.overlayMaskTexture, typeof(Texture2D));
+                ppController.overlayMaskTexture = (Texture2D)EditorGUILayout.ObjectField("肌理蒙版图", ppController.overlayMaskTexture, typeof(Texture2D));
                 if (EditorGUI.EndChangeCheck())
                 {
                     ReflectMethod("SetTexture",ppController);
                 }
 
                 ppController.overlayMaskTextureSt =
-                    EditorGUILayout.Vector4Field("肌理图蒙板缩放平移", ppController.overlayMaskTextureSt);
+                    EditorGUILayout.Vector4Field("肌理图蒙版缩放平移", ppController.overlayMaskTextureSt);
 
             });
 
@@ -219,10 +220,12 @@ public class PostProcessingControllerGUI : Editor
         {
             ReflectMethod("FindManager",ppController);
         }
-        if (GUILayout.Button("选择当前VituralCamera"))
+        #if CINIMACHINE_3_0
+        if (GUILayout.Button("选择当前CinemachineCamera"))
         {
-            ReflectMethod("FindVirtualCamera",ppController);
+            ppController.FindVirtualCamera();
         }
+        #endif
 
     }
     

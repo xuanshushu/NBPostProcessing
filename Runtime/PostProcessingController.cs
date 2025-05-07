@@ -236,7 +236,9 @@ public class PostProcessingController : MonoBehaviour
         SetToggles();
         SetUVFromDistort();
         SetTexture();
+        #if CINIMACHINE_3_0
         InitCinemachineCamera();
+        #endif
     }
 
     void SetScreenCenterPos()

@@ -82,6 +82,10 @@ Shader "XuanXuan/Postprocess/NBPostProcessUber"
                 SAMPLER(sampler_TextureOverlay);
                 TEXTURE2D(_TextureOverlayMask);
                 SAMPLER(sampler_TextureOverlayMask);
+
+                #if UNITY_VERSION < 202210
+                SAMPLER(sampler_LinearClamp);
+                #endif
                 
                 CBUFFER_START(UnityPerMaterial)
                 

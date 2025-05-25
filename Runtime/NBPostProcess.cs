@@ -13,6 +13,7 @@ namespace MhRender.RendererFeatures
         private DisturbanceMaskRenderPass _disturbanceMaskRenderPass;
         private ScreenColorRenderPass _screenColorRenderPass;
 
+
         public static Material NBPostProcessMaterial;
         
         //public MaskFormat maskFormat = MaskFormat.RG32;
@@ -80,16 +81,25 @@ namespace MhRender.RendererFeatures
                 canFind = true;
             }
             
-            _screenColorDownSampleMat = CoreUtils.CreateEngineMaterial(Shader.Find("XuanXuan/ColorBlit"));
+            #if UNIVERSAL_RP_13_1_2_OR_NEWER
+                _screenColorDownSampleMat = CoreUtils.CreateEngineMaterial(Shader.Find("XuanXuan/ColorBlit"));
+            #else                
+                _screenColorDownSampleMat = CoreUtils.CreateEngineMaterial(Shader.Find("XuanXuan/ColorBufferBlit"));
+            #endif
             _screenColorRenderPass = new ScreenColorRenderPass(_screenColorDownSampleMat, downSampling);
             _screenColorRenderPass.renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
 
             
             _profilingSampler = new ProfilingSampler("DisturbanceRender");
-            
             _disturbanceDownSampleMat = CoreUtils.CreateEngineMaterial(Shader.Find("XuanXuan/ColorBlit"));
             _disturbanceMaskRenderPass = new DisturbanceMaskRenderPass(_profilingSampler,_disturbanceDownSampleMat,downSampling,disturbanceLayerMask);
             _disturbanceMaskRenderPass.renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
+            
+            
+            
+            #if !UNIVERSAL_RP_13_1_2_OR_NEWER
+            _profilingSampler = new ProfilingSampler("DisturbanceDownRTBlit");
+            #endif
             
             if (fullscreenTriangle == null)
             {
@@ -116,6 +126,8 @@ namespace MhRender.RendererFeatures
             _renderPass.renderPassEvent = RenderPassEvent.AfterRenderingTransparents;
         }
         
+        #if UNIVERSAL_RP_13_1_2_OR_NEWER
+        
         public override void SetupRenderPasses(ScriptableRenderer renderer, in RenderingData renderingData)
         {
             PostProcessingManager.InitMat();
@@ -136,11 +148,22 @@ namespace MhRender.RendererFeatures
             }
         }
 
+        #endif
+
         public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData renderingData)
         {
             if ((renderingData.cameraData.cameraType == CameraType.Game ||
                 renderingData.cameraData.cameraType == CameraType.SceneView) && canFind)
             {
+                
+                #if !UNIVERSAL_RP_13_1_2_OR_NEWER
+                    // _disturbanceMaskRenderPass.ConfigureInput(ScriptableRenderPassInput.Color);
+                    // _disturbanceMaskRenderPass.SetUp(renderer.cameraColorTargetHandle);
+                    _screenColorRenderPass.ConfigureInput(ScriptableRenderPassInput.Color);
+                    _screenColorRenderPass.SetUp(renderer);
+                #endif
+                
+                PostProcessingManager.InitMat();
                 renderer.EnqueuePass(_screenColorRenderPass);
                 renderer.EnqueuePass(_disturbanceMaskRenderPass);
                 renderer.EnqueuePass(_renderPass);
@@ -188,9 +211,17 @@ namespace MhRender.RendererFeatures
     {
         
         private ProfilingSampler _profilingSampler;
-        private RTHandle _DisturbanceMaskRTHandle;
-        private RTHandle _cameraDepthRTHandle;
-        private RTHandle _DownRT;
+        #if UNIVERSAL_RP_13_1_2_OR_NEWER
+            private  RTHandle _DisturbanceMaskRTHandle;
+            private RTHandle _cameraDepthRTHandle;
+            private RTHandle _DownRT;
+        #else
+            private static readonly int _DisturbanceMaskRTID = Shader.PropertyToID("_DisturbanceMaskRT"); 
+            private static readonly int _DownRTID = Shader.PropertyToID("_DisturbanceMaskTex"); 
+            private RenderTargetIdentifier  _DisturbanceMaskRTHandle = new RenderTargetIdentifier (_DisturbanceMaskRTID);
+            private RenderTargetIdentifier  _cameraDepthRTHandle;
+            private RenderTargetIdentifier  _DownRT = new RenderTargetIdentifier (_DownRTID);
+        #endif
         private Material tempMat;
         
         private readonly Downsampling _downSampling;
@@ -217,9 +248,13 @@ namespace MhRender.RendererFeatures
             _DisturbanceMaskLayer = disturbanceMaskLayer;
         }
 
-        public void SetUp(RTHandle cameraRTHandle)
+    #if UNIVERSAL_RP_13_1_2_OR_NEWER
+        
+        public void SetUp ( RTHandle cameraRTHandle )
         {
+
             RenderTextureDescriptor descrip = cameraRTHandle.rt.descriptor;
+            
             descrip.colorFormat = RenderTextureFormat.RG32;
             descrip.depthBufferBits = 0;
             RenderingUtils.ReAllocateIfNeeded(ref _DisturbanceMaskRTHandle, descrip, name: "DisturbanceMaskRT");
@@ -242,18 +277,59 @@ namespace MhRender.RendererFeatures
             }
             RenderingUtils.ReAllocateIfNeeded(ref _DownRT, descrip, name:"MaskDownCopyRT");
         }
+    #else
+        //在AddPass之前触发
+
+        public void SetUpDisturbanceMask(RenderTextureDescriptor descrip ,CommandBuffer cmd)
+        {
+            
+            descrip.colorFormat = RenderTextureFormat.RG32;
+            descrip.depthBufferBits = 0;
+            cmd.GetTemporaryRT(_DisturbanceMaskRTID, descrip,FilterMode.Bilinear);
+            
+            switch (_downSampling)
+            {
+                case Downsampling._2xBilinear:
+                    descrip.width /= 2;
+                    descrip.height /= 2;
+                    break;
+                case Downsampling._4xBilinear:
+                    descrip.width /= 4;
+                    descrip.height /= 4;
+                    break;
+                case Downsampling._4xBox:
+                    descrip.width /= 4;
+                    descrip.height /= 4;
+                    break;
+            }
+            cmd.GetTemporaryRT(_DownRTID, descrip,FilterMode.Bilinear);
+        }
+    #endif
         
         public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
         {
             _Filtering = new FilteringSettings(RenderQueueRange.all, _DisturbanceMaskLayer);
-            _cameraDepthRTHandle = renderingData.cameraData.renderer.cameraDepthTargetHandle;
+            #if UNIVERSAL_RP_13_1_2_OR_NEWER
+                _cameraDepthRTHandle = renderingData.cameraData.renderer.cameraDepthTargetHandle;
+            #else
+                _cameraDepthRTHandle = renderingData.cameraData.renderer.cameraDepthTarget;
+                SetUpDisturbanceMask(renderingData.cameraData.cameraTargetDescriptor,cmd);
+            #endif
+            
         }
+
+        private readonly Color _clearDisturbanceMaskColor = new Color(0.5f, 0.5f, 0f, 1f);
         
         public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
         {
-            ConfigureTarget(_DisturbanceMaskRTHandle, _cameraDepthRTHandle);
+#if UNIVERSAL_RP_13_1_2_OR_NEWER
+                ConfigureTarget(_DisturbanceMaskRTHandle, _cameraDepthRTHandle);
+#else
+                ConfigureTarget(_DisturbanceMaskRTID, _cameraDepthRTHandle);
+            
+#endif
             //将RT清空
-            ConfigureClear(ClearFlag.Color, Color.grey);
+            ConfigureClear(ClearFlag.Color, _clearDisturbanceMaskColor);
         }
         
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
@@ -270,10 +346,11 @@ namespace MhRender.RendererFeatures
             var DisturbanceDraw = CreateDrawingSettings(_shaderTag, ref renderingData, renderingData.cameraData.defaultOpaqueSortFlags);
             
             CommandBuffer cmd = CommandBufferPool.Get();
-            using (new ProfilingScope(cmd,_profilingSampler))
+            using (new ProfilingScope(cmd, _profilingSampler))
             {
                 context.DrawRenderers(renderingData.cullResults, ref DisturbanceDraw, ref _Filtering);
-            
+
+#if UNIVERSAL_RP_13_1_2_OR_NEWER
                 _renderMaskMat.SetTexture(CameraTexture, _DisturbanceMaskRTHandle);
                 switch (_downSampling)
                 {
@@ -284,31 +361,77 @@ namespace MhRender.RendererFeatures
                         Blitter.BlitTexture(cmd, _DisturbanceMaskRTHandle, _DownRT, _renderMaskMat, 0);
                         break;
                     case Downsampling._4xBox:
-                        _renderMaskMat.SetFloat(SampleOffset,2);
+                        _renderMaskMat.SetFloat(SampleOffset, 2);
                         Blitter.BlitTexture(cmd, _DisturbanceMaskRTHandle, _DownRT, _renderMaskMat, 1);
                         break;
                     default:
-                        Blitter.BlitTexture(cmd, _DisturbanceMaskRTHandle, _DownRT, _renderMaskMat, 0);  
+                        Blitter.BlitTexture(cmd, _DisturbanceMaskRTHandle, _DownRT, _renderMaskMat, 0);
                         break;
                 }
-            }
-            cmd.SetGlobalTexture("_DisturbanceMaskTex", _DownRT);
-            
+
+#else
+
+                // cmd.SetGlobalTexture(_DisturbanceMaskRTID, _DisturbanceMaskRTHandle);
+                //Bug:在非播放状态时，_DisturbanceMaskRTID在这里会经常丢失。造成画面闪烁。但是，只要有一个DistortObject在Scene中，并LockInspector，就不会闪烁，非常奇怪。
+                _renderMaskMat.SetTexture(CameraTexture, Shader.GetGlobalTexture(_DisturbanceMaskRTID));
+                cmd.SetRenderTarget(_DownRT);
+                switch (_downSampling)
+                {
+                    case Downsampling._2xBilinear:
+                        // Blitter.BlitTexture(cmd, _DisturbanceMaskRTHandle, _DownRT, _renderMaskMat, 0);
+                        // cmd.Blit(_DisturbanceMaskRTHandle, _DownRT, _renderMaskMat, 0);
+                        cmd.DrawMesh(RenderingUtils.fullscreenMesh, Matrix4x4.identity, _renderMaskMat, 0, 2);
+                        // Blit(cmd, _DisturbanceMaskRTHandle,_DownRT,_renderMaskMat,0);
+                        break;
+                    case Downsampling._4xBilinear:
+                        // Blitter.BlitTexture(cmd, _DisturbanceMaskRTHandle, _DownRT, _renderMaskMat, 0);
+                        // cmd.Blit(_DisturbanceMaskRTHandle, _DownRT, _renderMaskMat, 0);
+                        cmd.DrawMesh(RenderingUtils.fullscreenMesh, Matrix4x4.identity, _renderMaskMat, 0, 2);
+                        // Blit(cmd, _DisturbanceMaskRTHandle,_DownRT,_renderMaskMat,0);
+                        break;
+                    case Downsampling._4xBox:
+                        _renderMaskMat.SetFloat(SampleOffset, 2);
+                        // Blitter.BlitTexture(cmd, _DisturbanceMaskRTHandle, _DownRT, _renderMaskMat, 1);
+                        // cmd.Blit(_DisturbanceMaskRTHandle, _DownRT, _renderMaskMat, 1);
+                        cmd.DrawMesh(RenderingUtils.fullscreenMesh, Matrix4x4.identity, _renderMaskMat, 0, 3);
+                        // Blit(cmd, _DisturbanceMaskRTHandle,_DownRT,_renderMaskMat,1);
+                        break;
+                    default:
+                        // Blitter.BlitTexture(cmd, _DisturbanceMaskRTHandle, _DownRT, _renderMaskMat, 0);  
+                        // cmd.Blit(_DisturbanceMaskRTHandle, _DownRT, _renderMaskMat, 0);
+                        cmd.DrawMesh(RenderingUtils.fullscreenMesh, Matrix4x4.identity, _renderMaskMat, 0, 2);
+                        // Blit(cmd, _DisturbanceMaskRTHandle,_DownRT,_renderMaskMat,0);
+                        break;
+                }
+#endif
+                cmd.SetGlobalTexture("_DisturbanceMaskTex", _DownRT);
+
             context.ExecuteCommandBuffer(cmd);
             cmd.Clear();
             CommandBufferPool.Release(cmd);
+            }
         }
 
+        #if !UNIVERSAL_RP_13_1_2_OR_NEWER
         // Cleanup any allocated resources that were created during the execution of this render pass.
         public override void OnCameraCleanup(CommandBuffer cmd)
         {
+            cmd.ReleaseTemporaryRT(_DisturbanceMaskRTID);
+            cmd.ReleaseTemporaryRT(_DownRTID);
         }
+
+        //JustForSimple
+        public void Dispose()
+        {
+        }
+        #else
 
         public void Dispose()
         {
             _DisturbanceMaskRTHandle?.Release();
             _DownRT?.Release();
         }
+        #endif
     }
     public class NBPostProcessRenderPass : ScriptableRenderPass
     {

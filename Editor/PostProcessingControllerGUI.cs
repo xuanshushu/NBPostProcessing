@@ -9,7 +9,7 @@ using Unity.Cinemachine;
 #endif
 
 using System;
-using Unity.Properties;
+// using Unity.Properties;
 
 [CustomEditor(typeof(PostProcessingController))]
 public class PostProcessingControllerGUI : Editor

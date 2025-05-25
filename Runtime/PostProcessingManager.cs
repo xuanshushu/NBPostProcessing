@@ -58,7 +58,7 @@ public class PostProcessingManager : MonoBehaviour
         }
         else
         {
-            Destroy(this);
+            DestroyImmediate(this);
         }
     }
 
@@ -243,6 +243,7 @@ public class PostProcessingManager : MonoBehaviour
             return;
         }
         
+        if(!material) return;
         /*
 #if UNITY_EDITOR
         if (flags.GetMaterial() != PostProcessingManager.material)

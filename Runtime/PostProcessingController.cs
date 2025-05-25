@@ -443,6 +443,7 @@ public class PostProcessingController : MonoBehaviour
             isFirstUpdate = false;
             return;
         }
+        if(!PostProcessingManager.material) return;
 //#if UNITY_EDITOR
         //Odin的ToggleGroup和OnValueChange功能冲突，导致不一定生效。不好调试。所以用手动的方式更新。
         bool isToggleChanged = false;

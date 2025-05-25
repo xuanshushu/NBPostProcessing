@@ -35,6 +35,8 @@ Shader "XuanXuan/Disturbance"
             #pragma target 3.5 DOTS_INSTANCING_ON
 
             #pragma shader_feature_local_fragment _PARTICLE_CUSTOMDATA_ON
+            #pragma enable_d3d11_debug_symbols
+            
 
             // This line defines the name of the vertex shader.
             #pragma vertex vert

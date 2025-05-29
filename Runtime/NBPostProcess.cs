@@ -373,34 +373,35 @@ namespace MhRender.RendererFeatures
 
                 // cmd.SetGlobalTexture(_DisturbanceMaskRTID, _DisturbanceMaskRTHandle);
                 //Bug:在非播放状态时，_DisturbanceMaskRTID在这里会经常丢失。造成画面闪烁。但是，只要有一个DistortObject在Scene中，并LockInspector，就不会闪烁，非常奇怪。
-                _renderMaskMat.SetTexture(CameraTexture, Shader.GetGlobalTexture(_DisturbanceMaskRTID));
+                cmd.SetGlobalTexture(CameraTexture, _DisturbanceMaskRTHandle);
+                // _renderMaskMat.SetTexture(CameraTexture, Shader.GetGlobalTexture(_DisturbanceMaskRTID));
                 cmd.SetRenderTarget(_DownRT);
                 switch (_downSampling)
                 {
                     case Downsampling._2xBilinear:
                         // Blitter.BlitTexture(cmd, _DisturbanceMaskRTHandle, _DownRT, _renderMaskMat, 0);
                         // cmd.Blit(_DisturbanceMaskRTHandle, _DownRT, _renderMaskMat, 0);
-                        cmd.DrawMesh(RenderingUtils.fullscreenMesh, Matrix4x4.identity, _renderMaskMat, 0, 2);
-                        // Blit(cmd, _DisturbanceMaskRTHandle,_DownRT,_renderMaskMat,0);
+                        // cmd.DrawMesh(RenderingUtils.fullscreenMesh, Matrix4x4.identity, _renderMaskMat, 0, 2);
+                        Blit(cmd, _DisturbanceMaskRTHandle,_DownRT,_renderMaskMat,0);
                         break;
                     case Downsampling._4xBilinear:
                         // Blitter.BlitTexture(cmd, _DisturbanceMaskRTHandle, _DownRT, _renderMaskMat, 0);
                         // cmd.Blit(_DisturbanceMaskRTHandle, _DownRT, _renderMaskMat, 0);
-                        cmd.DrawMesh(RenderingUtils.fullscreenMesh, Matrix4x4.identity, _renderMaskMat, 0, 2);
-                        // Blit(cmd, _DisturbanceMaskRTHandle,_DownRT,_renderMaskMat,0);
+                        // cmd.DrawMesh(RenderingUtils.fullscreenMesh, Matrix4x4.identity, _renderMaskMat, 0, 2);
+                        Blit(cmd, _DisturbanceMaskRTHandle,_DownRT,_renderMaskMat,0);
                         break;
                     case Downsampling._4xBox:
                         _renderMaskMat.SetFloat(SampleOffset, 2);
                         // Blitter.BlitTexture(cmd, _DisturbanceMaskRTHandle, _DownRT, _renderMaskMat, 1);
                         // cmd.Blit(_DisturbanceMaskRTHandle, _DownRT, _renderMaskMat, 1);
-                        cmd.DrawMesh(RenderingUtils.fullscreenMesh, Matrix4x4.identity, _renderMaskMat, 0, 3);
-                        // Blit(cmd, _DisturbanceMaskRTHandle,_DownRT,_renderMaskMat,1);
+                        // cmd.DrawMesh(RenderingUtils.fullscreenMesh, Matrix4x4.identity, _renderMaskMat, 0, 3);
+                        Blit(cmd, _DisturbanceMaskRTHandle,_DownRT,_renderMaskMat,1);
                         break;
                     default:
                         // Blitter.BlitTexture(cmd, _DisturbanceMaskRTHandle, _DownRT, _renderMaskMat, 0);  
                         // cmd.Blit(_DisturbanceMaskRTHandle, _DownRT, _renderMaskMat, 0);
-                        cmd.DrawMesh(RenderingUtils.fullscreenMesh, Matrix4x4.identity, _renderMaskMat, 0, 2);
-                        // Blit(cmd, _DisturbanceMaskRTHandle,_DownRT,_renderMaskMat,0);
+                        // cmd.DrawMesh(RenderingUtils.fullscreenMesh, Matrix4x4.identity, _renderMaskMat, 0, 2);
+                        Blit(cmd, _DisturbanceMaskRTHandle,_DownRT,_renderMaskMat,0);
                         break;
                 }
 #endif

@@ -70,6 +70,7 @@ namespace MhRender.RendererFeatures
         private bool canFind = false;
         public override void Create()
         {
+            
             if (Shader.Find("XuanXuan/ColorBlit") == null || 
                 Shader.Find("XuanXuan/Postprocess/NBPostProcessUber") == null)
             {
@@ -406,10 +407,9 @@ namespace MhRender.RendererFeatures
 #endif
                 cmd.SetGlobalTexture("_DisturbanceMaskTex", _DownRT);
 
-            context.ExecuteCommandBuffer(cmd);
-            cmd.Clear();
-            CommandBufferPool.Release(cmd);
             }
+            context.ExecuteCommandBuffer(cmd);
+            CommandBufferPool.Release(cmd);
         }
 
         #if !UNIVERSAL_RP_13_1_2_OR_NEWER

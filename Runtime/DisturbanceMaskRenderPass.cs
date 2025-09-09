@@ -51,7 +51,7 @@ namespace NBShader
 
             RenderTextureDescriptor descrip = cameraRTHandle.rt.descriptor;
             
-            descrip.colorFormat = RenderTextureFormat.RG32;
+            descrip.colorFormat = RenderTextureFormat.RGHalf;
             descrip.depthBufferBits = 0;
             RenderingUtils.ReAllocateIfNeeded(ref _DisturbanceMaskRTHandle, descrip, name: "DisturbanceMaskRT");
             
@@ -79,7 +79,7 @@ namespace NBShader
         public void SetUpDisturbanceMask(RenderTextureDescriptor descrip ,CommandBuffer cmd)
         {
             
-            descrip.colorFormat = RenderTextureFormat.RG32;
+            descrip.colorFormat = RenderTextureFormat.RGHalf;
             descrip.depthBufferBits = 0;
             cmd.GetTemporaryRT(_DisturbanceMaskRTID, descrip,FilterMode.Bilinear);
             
@@ -114,7 +114,7 @@ namespace NBShader
             
         }
 
-        private readonly Color _clearDisturbanceMaskColor = new Color(0.5f, 0.5f, 0f, 1f);
+        private readonly Color _clearDisturbanceMaskColor = new Color(0f, 0f, 0f, 1f);
         
         public override void Configure(CommandBuffer cmd, RenderTextureDescriptor cameraTextureDescriptor)
         {
